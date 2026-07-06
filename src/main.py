@@ -24,6 +24,8 @@ target_altitude = 10.0
 dt = 0.1
 
 frame = 0
+battery = 100.0
+flight_mode = "HOVER"
 
 running = True
 
@@ -37,27 +39,37 @@ while running:
 
         if event.type == pygame.KEYDOWN:
 
-            # Increase target altitude
             if event.key == pygame.K_UP:
                 target_altitude += 0.2
 
-            # Decrease target altitude
             if event.key == pygame.K_DOWN:
                 target_altitude = max(0, target_altitude - 0.2)
 
     # Smooth horizontal movement
     keys = pygame.key.get_pressed()
 
+    acceleration = 0.4
+    friction = 0.90
+
     if keys[pygame.K_LEFT]:
-        drone.x -= 5
+        drone.x_velocity -= acceleration
 
     if keys[pygame.K_RIGHT]:
-        drone.x += 5
+        drone.x_velocity += acceleration
 
-    # Keep drone inside the screen
-    drone.x = max(20, min(drone.x, WIDTH - 60))
+    drone.velocity *= friction
+    drone.x += drone.x_velocity
 
-    # PID control
+    # Keep drone inside screen
+    if drone.x < 20:
+        drone.x = 20
+        drone.x_velocity = 0
+
+    if drone.x > WIDTH - 60:
+        drone.x = WIDTH - 60
+        drone.x_velocity = 0
+
+    # PID altitude control
     control = pid.compute(
         target_altitude,
         drone.altitude,
@@ -68,12 +80,26 @@ while running:
 
     update_drone(drone, thrust, dt)
 
-    # Draw everything
+    # Flight mode
+    difference = target_altitude - drone.altitude
+
+    if abs(difference) <= 0.2:
+        flight_mode = "HOVER"
+    elif difference > 0:
+        flight_mode = "ASCENDING"
+    else:
+        flight_mode = "DESCENDING"
+
+    print(drone.x)
+    print(drone.x_velocity)
     draw_drone(
         screen,
         drone.x,
         drone.altitude,
+        drone.velocity,
         target_altitude,
+        battery,
+        flight_mode,
         frame
     )
 

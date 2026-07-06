@@ -1,6 +1,7 @@
 class Drone:
     def __init__(self):
         self.x = 280
+        self.x_velocity = 0.0
         self.altitude = 0.0
         self.velocity = 0.0
         self.mass = 1.0

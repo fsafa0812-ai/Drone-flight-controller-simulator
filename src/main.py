@@ -1,5 +1,5 @@
 import pygame
-
+import random
 from drone import Drone
 from physics import update_drone
 from controller import PIDController
@@ -13,7 +13,7 @@ pygame.display.set_caption("Drone Flight Controller Simulator")
 clock = pygame.time.Clock()
 
 drone = Drone()
-
+wind = 0.0
 pid = PIDController(
     kp=2.0,
     ki=0.1,
@@ -37,7 +37,8 @@ while running:
 
         if event.type == pygame.QUIT:
             running = False
-
+        if frame % 120 == 0:
+         wind = random.uniform (-0.3,0.3)
         if event.type == pygame.KEYDOWN:
 
             if event.key == pygame.K_UP:
@@ -127,7 +128,8 @@ while running:
         target_altitude,
         battery,
         flight_mode,
-        frame
+        frame,
+        wind
     )
 
     frame += 1

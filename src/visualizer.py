@@ -7,66 +7,53 @@ SKY = (180, 220, 255)
 BLACK = (0, 0, 0)
 GREEN = (50, 180, 50)
 GRAY = (80, 80, 80)
-RED = (220, 50, 50)
+WHITE = (255, 255, 255)
+
+# Load drone image
+drone_image = pygame.image.load("assets/drone.png")
+drone_image = pygame.transform.scale(drone_image, (80, 60))
 
 
-def draw_drone(screen, x, altitude, velocity, target, battery,flight_mode, frame):
+def draw_drone(screen, x, altitude, velocity, target, battery, flight_mode,frame):
 
     screen.fill(SKY)
+
+    # Clouds
+    pygame.draw.circle(screen, WHITE, (100, 80), 25)
+    pygame.draw.circle(screen, WHITE, (125, 65), 30)
+    pygame.draw.circle(screen, WHITE, (150, 80), 25)
+
+    pygame.draw.circle(screen, WHITE, (420, 120), 25)
+    pygame.draw.circle(screen, WHITE, (445, 105), 30)
+    pygame.draw.circle(screen, WHITE, (470, 120), 25)
 
     # Ground
     pygame.draw.rect(screen, GREEN, (0, 650, WIDTH, 50))
 
+    # Landing pad
+    pygame.draw.rect(screen, GRAY, (230, 620, 140, 10))
+
+    font = pygame.font.SysFont(None, 30)
+    h_text = font.render("H", True, WHITE)
+    screen.blit(h_text, (292, 590))
+
     # Convert altitude to screen position
-    y = 650 - int(altitude * 40)
+    y = 590 - int(altitude * 40)
 
-    # Keep drone inside the screen
-    x = max(20, min(x, WIDTH - 60))
+    # Keep drone inside screen
+    x = max(20, min(x, WIDTH - 80))
 
-    # Drone body
-    pygame.draw.rect(screen, GRAY, (x, y, 40, 15))
-
-    # Drone arms
-    pygame.draw.line(screen, BLACK, (x - 20, y + 7), (x + 60, y + 7), 3)
-
-    # Simple propeller animation
-    prop_length = 8 + (frame % 6)
-
-    pygame.draw.line(
-        screen, RED,
-        (x - 20 - prop_length, y + 7),
-        (x - 20 + prop_length, y + 7),
-        2
-    )
-
-    pygame.draw.line(
-        screen, RED,
-        (x + 60 - prop_length, y + 7),
-        (x + 60 + prop_length, y + 7),
-        2
-    )
-
-    # Landing legs
-    pygame.draw.line(screen, BLACK, (x + 5, y + 15), (x, y + 25), 2)
-    pygame.draw.line(screen, BLACK, (x + 35, y + 15), (x + 40, y + 25), 2)
+    # Draw drone image
+    screen.blit(drone_image, (x, y))
 
     # Dashboard
     font = pygame.font.SysFont(None, 28)
 
-    screen.blit(font.render(f"Altitude : {altitude:.2f} m", True, BLACK), (20, 20))
-    screen.blit(font.render(f"Velocity : {velocity:.2f} m/s", True, BLACK), (20, 50))
-    screen.blit(font.render(f"Target   : {target:.2f} m", True, BLACK), (20, 80))
-    screen.blit(font.render(f"Battery  : {battery:.0f}%", True, BLACK), (20, 110))
-
-    # Flight mode
-    difference= target- altitude
-    if abs(difference)<= 0.2 and abs(velocity)<=0.1:
-        mode = "HOVER"
-    elif difference > 0:
-        mode = "ASCENDING"
-    else:
-        mode = "DESCENDING"
-
-    screen.blit(font.render(f"Mode     : {mode}", True, BLACK), (20, 140))
+    screen.blit(font.render("DRONE TELEMETRY", True, BLACK), (20, 20))
+    screen.blit(font.render(f"Altitude : {altitude:.2f} m", True, BLACK), (20, 60))
+    screen.blit(font.render(f"Velocity : {velocity:.2f} m/s", True, BLACK), (20, 90))
+    screen.blit(font.render(f"Target   : {target:.2f} m", True, BLACK), (20, 120))
+    screen.blit(font.render(f"Battery  : {battery:.0f}%", True, BLACK), (20, 150))
+    screen.blit(font.render(f"Mode     : {flight_mode}", True, BLACK), (20, 180))
 
     pygame.display.flip()

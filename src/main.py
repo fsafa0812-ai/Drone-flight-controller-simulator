@@ -25,13 +25,14 @@ dt = 0.1
 
 frame = 0
 battery = 100.0
-flight_mode = "HOVER"
+flight_mode = "LANDED"
+landing = False
 
 running = True
 
 while running:
 
-    # Handle events
+    # Handle Events
     for event in pygame.event.get():
 
         if event.type == pygame.QUIT:
@@ -42,10 +43,13 @@ while running:
             if event.key == pygame.K_UP:
                 target_altitude += 0.2
 
-            if event.key == pygame.K_DOWN:
+            elif event.key == pygame.K_DOWN:
                 target_altitude = max(0, target_altitude - 0.2)
 
-    # Smooth horizontal movement
+            elif event.key == pygame.K_l:
+                landing = True
+
+    # Keyboard Controls
     keys = pygame.key.get_pressed()
 
     acceleration = 0.4
@@ -57,7 +61,7 @@ while running:
     if keys[pygame.K_RIGHT]:
         drone.x_velocity += acceleration
 
-    drone.velocity *= friction
+    drone.x_velocity *= friction
     drone.x += drone.x_velocity
 
     # Keep drone inside screen
@@ -65,11 +69,22 @@ while running:
         drone.x = 20
         drone.x_velocity = 0
 
-    if drone.x > WIDTH - 60:
-        drone.x = WIDTH - 60
+    if drone.x > WIDTH - 80:
+        drone.x = WIDTH - 80
         drone.x_velocity = 0
 
-    # PID altitude control
+    # Automatic Landing
+    if landing:
+
+        target_altitude = 0
+
+        if drone.x < 260:
+            drone.x += 2
+
+        elif drone.x > 260:
+            drone.x -= 2
+
+    # PID Controller
     control = pid.compute(
         target_altitude,
         drone.altitude,
@@ -80,18 +95,30 @@ while running:
 
     update_drone(drone, thrust, dt)
 
-    # Flight mode
-    difference = target_altitude - drone.altitude
+    # Landing Complete
+    if landing and drone.altitude <= 0.1:
 
-    if abs(difference) <= 0.2:
-        flight_mode = "HOVER"
-    elif difference > 0:
+        drone.altitude = 0
+        drone.velocity = 0
+        landing = False
+        flight_mode = "LANDED"
+
+    # Flight Modes
+    if landing:
+        flight_mode = "LANDING"
+
+    elif drone.altitude <= 0.1:
+        flight_mode = "LANDED"
+
+    elif drone.velocity > 0.1:
         flight_mode = "ASCENDING"
-    else:
+
+    elif drone.velocity < -0.1:
         flight_mode = "DESCENDING"
 
-    print(drone.x)
-    print(drone.x_velocity)
+    else:
+        flight_mode = "HOVER"
+
     draw_drone(
         screen,
         drone.x,

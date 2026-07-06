@@ -85,16 +85,12 @@ def draw_drone(screen, x, altitude, velocity, target, battery, flight_mode, fram
     bar_width = 120
     bar_height = 10
 
-    pygame.draw.rect(screen, BLACK, (bar_x, bar_y, bar_width, bar_height), 1)
+    
 
     # Normalize wind (-0.3 to +0.3)
     wind_normalized = int((wind + 0.3) / 0.6 * bar_width)
     wind_normalized = max(0, min(wind_normalized, bar_width))
 
-    pygame.draw.rect(
-        screen,
-        (255, 120, 120),
-        (bar_x, bar_y, wind_normalized, bar_height)
-    )
+    
 
     pygame.display.flip()
